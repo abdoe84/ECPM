@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reviva - Advanced Wind Monitoring Dashboard</title>
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --scampi: #625d9d;
+      --patina: #66a286;
+      --picton-blue: #54c0e8;
+      --hippie-blue: #5f84b5;
+      --juniper: #658a8e;
+      --fountain-blue: #5bb4c2;
+      --breaker-bay: #63a597;
+      --bg-deep: #0a0a1f;
+      --bg-grad: #1a1a3e;
+      --text: #e7eef0;
+      --muted: #9fb2b6;
+      --card: #151538;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg-deep);
+      color: var(--text);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body.light-mode {
+      --bg-deep: #f5f7fa;
+      --bg-grad: #e5e7eb;
+      --text: #1a1a3e;
+      --muted: #6b7280;
+      --card: #ffffff;
+    }
+
+    /* Animated Background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(98, 93, 157, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(84, 192, 232, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(91, 180, 194, 0.1) 0%, transparent 50%);
+      animation: pulse 15s ease-in-out infinite;
+      z-index: 0;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 0.8; }
+    }
+
+    .container { max-width: 1600px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1; }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, var(--scampi), var(--hippie-blue), var(--fountain-blue));
+      padding: 20px 40px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.4);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--picton-blue), var(--patina), var(--breaker-bay));
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: white;
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .brand-logo {
+      height: 54px;
+      width: auto;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.3);
+    }
+
+    /* Navigation */
+    nav {
+      display: flex;
+      position: relative;
+      z-index: 10;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 12px 20px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    nav a::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,.2);
+      transition: left .3s ease;
+    }
+
+    nav a:hover::before {
+      left: 100%;
+    }
+
+    nav a:hover {
+      background: rgba(255,255,255,.15);
+      transform: translateY(-2px);
+    }
+
+    .menu-toggle {
+      display: none;
+      font-size: 1.8rem;
+      color: white;
+      cursor: pointer;
+      z-index: 101;
+      background: none;
+      border: none;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .icon-btn {
+      background: rgba(255,255,255,.15);
+      border: none;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: all .3s;
+    }
+
+    .icon-btn:hover {
+      background: rgba(255,255,255,.25);
+      transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+      nav {
+        display: none;
+        position: absolute;
+        top: 85px;
+        right: 20px;
+        background: rgba(21, 21, 56, 0.95);
+        width: 220px;
+        border-radius: 16px;
+        backdrop-filter: blur(20px);
+        box-shadow: 0 8px 32px rgba(0,0,0,.5);
+      }
+
+      nav ul {
+        flex-direction: column;
+        gap: 0;
+        padding: 10px;
+      }
+
+      nav li {
+        border-bottom: 1px solid rgba(255,255,255,.1);
+      }
+
+      nav li:last-child {
+        border-bottom: none;
+      }
+
+      nav a {
+        padding: 16px;
+      }
+
+      nav.show {
+        display: block;
+      }
+
+      .menu-toggle {
+        display: block;
+      }
+    }
+
+    .breadcrumbs {
+      padding: 16px 40px;
+      background: rgba(0,0,0,.2);
+      color: var(--muted);
+      font-size: 0.9rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .breadcrumbs a {
+      color: var(--picton-blue);
+      text-decoration: none;
+    }
+
+    .alert-banner {
+      background: linear-gradient(135deg, #f59e0b, #dc2626);
+      padding: 12px 40px;
+      color: white;
+      display: none;
+      align-items: center;
+      gap: 12px;
+      animation: slideDown .5s;
+      position: relative;
+      z-index: 1;
+    }
+
+    .alert-banner.show { display: flex; }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%); }
+      to { transform: translateY(0); }
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 24px;
+      padding: 40px 20px;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.03) 100%);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 20px;
+      text-align: center;
+      padding: 32px 24px;
+      box-shadow: 0 10px 40px rgba(0,0,0,.3);
+      transition: all .4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--picton-blue), var(--fountain-blue));
+      transform: scaleX(0);
+      transition: transform .4s ease;
+    }
+
+    .stat-card:hover::before { transform: scaleX(1); }
+
+    .stat-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 50px rgba(0,0,0,.4);
+    }
+
+    .stat-icon {
+      font-size: 2.5rem;
+      margin-bottom: 14px;
+      transition: transform .3s ease;
+    }
+
+    .stat-card:hover .stat-icon {
+      transform: scale(1.15) rotate(5deg);
+    }
+
+    .stat-card:nth-child(1) .stat-icon { color: var(--picton-blue); }
+    .stat-card:nth-child(2) .stat-icon { color: var(--patina); }
+    .stat-card:nth-child(3) .stat-icon { color: var(--fountain-blue); }
+    .stat-card:nth-child(4) .stat-icon { color: var(--breaker-bay); }
+
+    .stat-value {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--picton-blue), var(--fountain-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: 12px 0 8px;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 1.05rem;
+      font-weight: 500;
+    }
+
+    /* Section Title */
+    .section-title {
+      font-size: 2rem;
+      font-weight: 800;
+      text-align: center;
+      margin: 40px 0 30px;
+      background: linear-gradient(135deg, var(--picton-blue), var(--fountain-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Site Grid */
+    .site-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+      gap: 32px;
+      padding: 20px;
+      margin-bottom: 40px;
+    }
+
+    .site-card {
+      background: linear-gradient(135deg, rgba(255,255,255,.06) 0%, rgba(255,255,255,.02) 100%);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: var(--radius);
+      box-shadow: 0 15px 45px rgba(0,0,0,.3);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all .4s ease;
+      position: relative;
+    }
+
+    .site-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.1), transparent);
+      transition: left .6s ease;
+    }
+
+    .site-card:hover::before { left: 100%; }
+
+    .site-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 25px 60px rgba(0,0,0,.4);
+      border-color: rgba(255,255,255,.25);
+    }
+
+    .site-header {
+      padding: 20px;
+      background: linear-gradient(135deg, rgba(98, 93, 157, 0.3), rgba(84, 192, 232, 0.2));
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid rgba(255,255,255,.1);
+    }
+
+    .site-card:nth-child(1) .site-header { background: linear-gradient(135deg, rgba(98, 93, 157, 0.3), rgba(95, 132, 181, 0.2)); }
+    .site-card:nth-child(2) .site-header { background: linear-gradient(135deg, rgba(102, 162, 134, 0.3), rgba(99, 165, 151, 0.2)); }
+    .site-card:nth-child(3) .site-header { background: linear-gradient(135deg, rgba(84, 192, 232, 0.3), rgba(91, 180, 194, 0.2)); }
+    .site-card:nth-child(4) .site-header { background: linear-gradient(135deg, rgba(101, 138, 142, 0.3), rgba(91, 180, 194, 0.2)); }
+
+    .site-name {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .fav-btn {
+      background: none;
+      border: none;
+      color: #f59e0b;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: transform .2s;
+    }
+
+    .fav-btn:hover { transform: scale(1.2); }
+
+    .live-data {
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 16px;
+      background: rgba(0,0,0,.2);
+    }
+
+    .data-item { text-align: center; }
+
+    .data-label {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .data-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--picton-blue);
+    }
+
+    .map-container {
+      width: 100%;
+      height: 450px;
+    }
+
+    .map-container iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    /* Activity Log */
+    .activity-log {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 20px;
+      padding: 30px;
+      margin: 30px 20px;
+    }
+
+    .chart-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--text);
+    }
+
+    .activity-item {
+      padding: 16px;
+      border-left: 3px solid var(--picton-blue);
+      margin-bottom: 16px;
+      background: rgba(255,255,255,.05);
+      border-radius: 8px;
+    }
+
+    .activity-member {
+      font-weight: 700;
+      color: var(--picton-blue);
+    }
+
+    .activity-time {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Quick Jump */
+    .quick-jump {
+      position: fixed;
+      right: 30px;
+      bottom: 30px;
+      z-index: 1000;
+    }
+
+    .quick-jump-btn {
+      background: linear-gradient(135deg, var(--scampi), var(--picton-blue));
+      color: white;
+      border: none;
+      padding: 16px;
+      border-radius: 50%;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(0,0,0,.3);
+      transition: all .3s;
+    }
+
+    .quick-jump-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .quick-jump-menu {
+      position: absolute;
+      bottom: 70px;
+      right: 0;
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 16px;
+      padding: 12px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.3);
+      min-width: 200px;
+      display: none;
+    }
+
+    .quick-jump-menu.show { display: block; }
+
+    .quick-jump-header {
+      padding: 8px 16px;
+      font-weight: 700;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .quick-jump-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+    }
+
+    .quick-jump-item:hover {
+      background: rgba(255,255,255,.1);
+    }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 20px;
+    }
+
+    .modal.show { display: flex; }
+
+    .modal-content {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 800px;
+      max-height: 80vh;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 20px; right: 20px;
+      background: none;
+      border: none;
+      font-size: 2rem;
+      cursor: pointer;
+      color: var(--text);
+    }
+
+    .modal-title {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, var(--picton-blue), var(--fountain-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .modal-text {
+      line-height: 1.8;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .modal-subtitle {
+      font-size: 1.5rem;
+      margin-top: 30px;
+      margin-bottom: 16px;
+      color: var(--picton-blue);
+    }
+
+    /* Footer */
+    .footer {
+      background: linear-gradient(135deg, rgba(21, 21, 56, 0.9), rgba(15, 15, 35, 0.9));
+      text-align: center;
+      padding: 32px;
+      margin-top: 60px;
+      border-top: 2px solid rgba(255,255,255,.1);
+      position: relative;
+    }
+
+    .footer::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--picton-blue), var(--fountain-blue), transparent);
+    }
+
+    .footer-text {
+      color: var(--muted);
+    }
+
+    .footer-name {
+      background: linear-gradient(135deg, var(--picton-blue), var(--fountain-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 700;
+    }
+
+    .footer-email {
+      margin-top: 16px;
+    }
+
+    .footer-email a {
+      color: var(--picton-blue);
+      text-decoration: none;
+    }
+
+    @media (max-width: 768px) {
+      .site-grid { grid-template-columns: 1fr; }
+      .header-content { gap: 15px; }
+      .map-container { height: 320px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <div class="brand">
+        <img src="logo.png" alt="Reviva Logo" class="brand-logo">
+        <span>Environment & Sustainability Sector — ECPM Division</span>
+      </div>
+
+      <button class="menu-toggle" id="menuToggle">
+        <i class="fa fa-bars"></i>
+      </button>
+      
+      <nav id="navbar">
+        <ul>
+          <li><a href="pages/dashboard.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
+          <li><a href="pages/contact.html"><i class="fa-solid fa-envelope"></i> Contact Us</a></li>
+          <li><a href="pages/news.html"><i class="fa-solid fa-newspaper"></i> News</a></li>
+        </ul>
+      </nav>
+      
+      <div class="header-actions">
+        <button class="icon-btn" id="themeToggle">🌙</button>
+        <button class="icon-btn" id="aboutBtn">ℹ️</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Alert Banner -->
+  <div class="alert-banner" id="alertBanner">
+    <span>⚠️</span>
+    <span id="alertMessage"></span>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-value">6</div>
+        <div class="stat-label">Team Members</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📍</div>
+        <div class="stat-value">9</div>
+        <div class="stat-label">Active Sites</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">👁️</div>
+        <div class="stat-value">316</div>
+        <div class="stat-label">Observations (2025)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⚠️</div>
+        <div class="stat-value">14%</div>
+        <div class="stat-label">Non-Compliance</div>
+      </div>
+    </div>
+
+    <!-- Site Cards -->
+    <h2 class="section-title">Live Wind Monitoring</h2>
+    <div class="site-grid" id="siteGrid"></div>
+
+    <!-- Team Activity Log -->
+    <div class="activity-log">
+      <h3 class="chart-title">Team Activity Log</h3>
+      <div id="activityLog"></div>
+    </div>
+  </div>
+
+  <!-- Quick Jump -->
+  <div class="quick-jump">
+    <div class="quick-jump-menu" id="quickJumpMenu">
+      <div class="quick-jump-header">Jump to Site</div>
+      <div id="quickJumpItems"></div>
+    </div>
+    <button class="quick-jump-btn" id="quickJumpBtn">🚀</button>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal" id="aboutModal">
+    <div class="modal-content">
+      <button class="modal-close" id="modalClose">×</button>
+      <h2 class="modal-title">About ECPM Division</h2>
+      <p class="modal-text">
+        The Environment & Sustainability Sector's Environmental Compliance and Performance Monitoring (ECPM) Division is dedicated to ensuring environmental excellence across all Reviva operations.
+      </p>
+      <p class="modal-text">
+        Our mission is to monitor, analyze, and optimize environmental performance through real-time data collection and advanced analytics. We work tirelessly to maintain compliance with environmental regulations while promoting sustainable practices.
+      </p>
+      <h3 class="modal-subtitle">Methodology</h3>
+      <p class="modal-text">
+...........      </p>
+      <h3 class="modal-subtitle">Glossary</h3>
+      <p class="modal-text">
+        <strong>AQI (Air Quality Index):</strong> A measure of air pollution levels (0-50: Good, 51-100: Moderate, 101+: Unhealthy)<br><br>
+        <strong>Compliance Rate:</strong> Percentage of observations meeting environmental standards
+      </p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-text">
+      Designed & Developed by <span class="footer-name">Abdulrahman Al-Fayadh</span>
+    </div>
+    <div class="footer-email">
+      📧 <a href="mailto:fayad@reviva.sa">fayad@reviva.sa</a>
+    </div>
+  </div>
+
+  <script>
+    // Site Data
+    const sites = [
+      { id: 1, name: 'Juhfa Site', lat: 22.6603, lon: 39.1858, zoom: 9 },
+      { id: 2, name: 'Dammam & Homa Site', lat: 26.1542, lon: 49.8686, zoom: 9 },
+      { id: 3, name: 'Jubail Site', lat: 26.9358, lon: 49.5094, zoom: 9 },
+      { id: 4, name: 'Yanbu Site', lat: 24.089, lon: 38.061, zoom: 9 }
+    ];
+
+    let windData = {};
+    let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    let darkMode = JSON.parse(localStorage.getItem('darkMode') || 'true');
+
+    // Helper Functions
+    const getWindDirection = (deg) => {
+      const dirs = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+      return dirs[Math.floor(deg / 22.5)];
+    };
+
+    const generateWindData = (siteName) => {
+      const baseSpeed = Math.random() * 20 + 10;
+      const baseDirection = Math.floor(Math.random() * 360);
+      return {
+        speed: baseSpeed.toFixed(1),
+        direction: baseDirection,
+        directionText: getWindDirection(baseDirection),
+        temp: (Math.random() * 15 + 20).toFixed(1),
+        humidity: Math.floor(Math.random() * 30 + 40),
+        pressure: (Math.random() * 20 + 1000).toFixed(1),
+        aqi: Math.floor(Math.random() * 100 + 20),
+        gusts: (baseSpeed + Math.random() * 10).toFixed(1)
+      };
+    };
+
+    const buildWindyURL = (lat, lon, zoom) => {
+      const params = new URLSearchParams({
+        lat, lon, detailLat: lat, detailLon: lon, zoom,
+        level: 'surface', overlay: 'wind', product: 'ecmwf',
+        marker: 'true', calendar: 'now', pressure: 'true',
+        type: 'map', location: 'coordinates', detail: 'true',
+        metricWind: 'km/h', metricTemp: '°C', radarRange: '-1'
+      });
+      return `https://embed.windy.com/embed2.html?${params.toString()}`;
+    };
+
+    // Initialize Wind Data
+    const updateWindData = () => {
+      sites.forEach(site => {
+        windData[site.name] = generateWindData(site.name);
+      });
+      renderSiteCards();
+      checkAlerts();
+    };
+
+    // Check for Alerts
+    const checkAlerts = () => {
+      const alerts = [];
+      Object.entries(windData).forEach(([site, data]) => {
+        if (parseFloat(data.speed) > 25) {
+          alerts.push(`${site}: High wind speed ${data.speed} km/h`);
+        }
+        if (parseInt(data.aqi) > 100) {
+          alerts.push(`${site}: Poor air quality AQI ${data.aqi}`);
+        }
+      });
+
+      const alertBanner = document.getElementById('alertBanner');
+      const alertMessage = document.getElementById('alertMessage');
+      
+      if (alerts.length > 0) {
+        alertMessage.textContent = alerts[0];
+        alertBanner.classList.add('show');
+      } else {
+        alertBanner.classList.remove('show');
+      }
+    };
+
+    // Render Site Cards
+    const renderSiteCards = () => {
+      const grid = document.getElementById('siteGrid');
+
+      grid.innerHTML = sites.map(site => {
+        const data = windData[site.name] || {};
+        const isFavorite = favorites.includes(site.name);
+        
+        return `
+          <div class="site-card" id="site-${site.id}">
+            <div class="site-header">
+              <div class="site-name">${site.name}</div>
+              <button class="fav-btn" onclick="toggleFavorite('${site.name}')">
+                ${isFavorite ? '⭐' : '☆'}
+              </button>
+            </div>
+            <div class="live-data">
+              <div class="data-item">
+                <div class="data-label">Wind Speed</div>
+                <div class="data-value">${data.speed || '—'} km/h</div>
+              </div>
+              <div class="data-item">
+                <div class="data-label">Direction</div>
+                <div class="data-value">${data.directionText || '—'}</div>
+              </div>
+              <div class="data-item">
+                <div class="data-label">Temperature</div>
+                <div class="data-value">${data.temp || '—'}°C</div>
+              </div>
+              <div class="data-item">
+                <div class="data-label">Humidity</div>
+                <div class="data-value">${data.humidity || '—'}%</div>
+              </div>
+              <div class="data-item">
+                <div class="data-label">Pressure</div>
+                <div class="data-value">${data.pressure || '—'} hPa</div>
+              </div>
+              <div class="data-item">
+                <div class="data-label">AQI</div>
+                <div class="data-value">${data.aqi || '—'}</div>
+              </div>
+            </div>
+            <div class="map-container">
+              <iframe src="${buildWindyURL(site.lat, site.lon, site.zoom)}" loading="lazy"></iframe>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      renderQuickJump();
+    };
+
+    // Render Activity Log
+    const renderActivityLog = () => {
+      const activities = [
+        { member: 'Parasana', action: 'Updated Juhfa readings', time: '2 hours ago' },
+        { member: 'Mustafa ', action: 'Logged Dammam observation', time: '4 hours ago' },
+        { member: 'Waleed', action: 'Reviewed Jubail compliance', time: '6 hours ago' },
+        { member: 'Amjaad', action: 'Added Yanbu report', time: '1 day ago' }
+      ];
+
+      const log = document.getElementById('activityLog');
+      log.innerHTML = activities.map(activity => `
+        <div class="activity-item">
+          <div>
+            <span class="activity-member">${activity.member}</span> ${activity.action}
+          </div>
+          <div class="activity-time">${activity.time}</div>
+        </div>
+      `).join('');
+    };
+
+    // Render Quick Jump Menu
+    const renderQuickJump = () => {
+      const items = document.getElementById('quickJumpItems');
+      items.innerHTML = sites.map(site => {
+        const isFavorite = favorites.includes(site.name);
+        return `
+          <div class="quick-jump-item" onclick="scrollToSite(${site.id})">
+            ${isFavorite ? '<span>⭐</span>' : ''}
+            <span>${site.name}</span>
+          </div>
+        `;
+      }).join('');
+    };
+
+    // Toggle Favorite
+    const toggleFavorite = (siteName) => {
+      if (favorites.includes(siteName)) {
+        favorites = favorites.filter(f => f !== siteName);
+      } else {
+        favorites.push(siteName);
+      }
+      localStorage.setItem('favorites', JSON.stringify(favorites));
+      renderSiteCards();
+    };
+
+    // Scroll to Site
+    const scrollToSite = (siteId) => {
+      const element = document.getElementById(`site-${siteId}`);
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById('quickJumpMenu').classList.remove('show');
+    };
+
+    // Toggle Theme
+    const toggleTheme = () => {
+      darkMode = !darkMode;
+      document.body.classList.toggle('light-mode', !darkMode);
+      document.getElementById('themeToggle').textContent = darkMode ? '☀️' : '🌙';
+      localStorage.setItem('darkMode', JSON.stringify(darkMode));
+    };
+
+    // Toggle Mobile Menu
+    const toggleMenu = () => {
+      document.getElementById('navbar').classList.toggle('show');
+    };
+
+    // Event Listeners
+    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+    document.getElementById('aboutBtn').addEventListener('click', () => {
+      document.getElementById('aboutModal').classList.add('show');
+    });
+    document.getElementById('modalClose').addEventListener('click', () => {
+      document.getElementById('aboutModal').classList.remove('show');
+    });
+    document.getElementById('aboutModal').addEventListener('click', (e) => {
+      if (e.target.id === 'aboutModal') {
+        document.getElementById('aboutModal').classList.remove('show');
+      }
+    });
+    document.getElementById('quickJumpBtn').addEventListener('click', () => {
+      document.getElementById('quickJumpMenu').classList.toggle('show');
+    });
+    document.getElementById('menuToggle').addEventListener('click', toggleMenu);
+
+    // Initialize
+    if (!darkMode) {
+      document.body.classList.add('light-mode');
+      document.getElementById('themeToggle').textContent = '🌙';
+    }
+
+    updateWindData();
+    renderActivityLog();
+
+    // Auto-refresh every 10 seconds
+    setInterval(updateWindData, 9000000);
+  </script>
+</body>
+</html>

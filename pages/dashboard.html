@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ECPM Dashboard - August 2025</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+    <style>
+      :root {
+        --color-1: #6B5B95;
+        --color-2: #5F9E8F;
+        --color-3: #5DBBDE;
+        --color-4: #6B8BA8;
+        --color-5: #5C7A7E;
+        --color-6: #60C5BA;
+        --color-7: #7FA594;
+        --bg-deep: #f8f9fa;
+        --bg-grad: #ffffff;
+        --text: #2d3436;
+        --muted: #636e72;
+        --grid: rgba(0, 0, 0, .08);
+        --card-bg: rgba(255, 255, 255, 0.9);
+        --card-border: rgba(0, 0, 0, 0.1);
+      }
+
+      * { margin:0; padding:0; box-sizing:border-box }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        background: linear-gradient(135deg, var(--bg-deep) 0%, var(--bg-grad) 100%);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 20px;
+        overflow-x: hidden;
+      }
+
+      .dashboard-container { max-width: 1400px; margin: 0 auto; animation: fadeIn .8s ease-in }
+
+      .header {
+        background: linear-gradient(135deg, #6B5B95 0%, #5DBBDE 100%);
+        padding: 30px;
+        border-radius: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
+        animation: slideDown .6s ease-out;
+        color: #ffffff;
+      }
+
+      .header h1 {
+        font-size: 2.5rem; font-weight: 700; margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, .2)
+      }
+
+      .header p { font-size: 1.1rem; opacity: .95 }
+
+      .stats-grid {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px; margin-bottom: 30px
+      }
+
+      .stat-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        padding: 25px; border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, .08);
+        transition: .3s; animation: fadeInUp .8s ease-out forwards; opacity: 0;
+      }
+      .stat-card:nth-child(1){animation-delay:.1s}
+      .stat-card:nth-child(2){animation-delay:.2s}
+      .stat-card:nth-child(3){animation-delay:.3s}
+      .stat-card:nth-child(4){animation-delay:.4s}
+
+      .stat-card:hover{ transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0, 0, 0, .12) }
+
+      .stat-card h3{
+        color: var(--muted); font-size:.9rem; font-weight:500; margin-bottom:10px;
+        letter-spacing:1px; text-transform:uppercase
+      }
+
+      .stat-value{
+        font-size:2rem; font-weight:800;
+        background: linear-gradient(135deg, #5F9E8F, #60C5BA);
+        -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+        margin-bottom:8px
+      }
+
+      .stat-subtitle{ font-size:.85rem; color:var(--muted) }
+
+      .chart-container{
+        background: var(--card-bg); border:1px solid var(--card-border);
+        padding:30px; border-radius:15px; box-shadow:0 4px 12px rgba(0,0,0,.08);
+        margin-bottom:25px; animation: fadeInUp 1s ease-out;
+      }
+
+      .chart-container h2{
+        margin-bottom:25px; font-size:1.5rem;
+        background: linear-gradient(135deg, #7FA594, #5DBBDE);
+        -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+      }
+
+      .grid-2{ display:grid; grid-template-columns: repeat(auto-fit, minmax(500px,1fr)); gap:25px }
+
+      .table-container{
+        background: var(--card-bg); border:1px solid var(--card-border);
+        padding:30px; border-radius:15px; box-shadow:0 4px 12px rgba(0,0,0,.08);
+        animation: fadeInUp 1.2s ease-out; overflow-x:auto
+      }
+
+      .table-container h2{ margin-bottom:25px; font-size:1.5rem;
+        background:linear-gradient(135deg,#7FA594,#5DBBDE);
+        -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text
+      }
+
+      table{ width:100%; border-collapse:separate; border-spacing:0 }
+      th{
+        background: linear-gradient(180deg, rgba(84,192,232,.15), rgba(102,162,134,.12));
+        padding:15px; text-align:left; font-weight:700; color:var(--text);
+        border-bottom:2px solid rgba(84,192,232,.3)
+      }
+      td{ padding:12px 15px; border-bottom:1px solid var(--card-border); transition:background .3s }
+      tr:hover td{ background: rgba(102,162,134,.08) }
+
+      .status-badge{ display:inline-block; padding:4px 12px; border-radius:20px; font-size:.85rem; font-weight:600 }
+      .status-ok{ background:rgba(102,162,134,.20); color:#22c55e; border:1px solid rgba(102,162,134,.35) }
+      .status-warning{ background:rgba(239,68,68,.15); color:#dc2626; border:1px solid rgba(239,68,68,.35); font-weight:700 }
+      .status-info{ background:rgba(59,130,246,.15); color:#2563eb; border:1px solid rgba(59,130,246,.35); font-weight:600 }
+
+      @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+      @keyframes slideDown{from{opacity:0;transform:translateY(-30px)}to{opacity:1;transform:translateY(0)}}
+      @keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+      @media (max-width:768px){
+        .grid-2{ grid-template-columns:1fr }
+        .header h1{ font-size:1.8rem }
+        .stat-value{ font-size:1.5rem }
+      }
+
+      canvas{ max-height:400px }
+
+      .filter-section{
+        background: var(--card-bg); border:1px solid var(--card-border);
+        padding:20px; border-radius:15px; box-shadow:0 4px 12px rgba(0,0,0,.08);
+        margin-bottom:25px; display:flex; gap:15px; flex-wrap:wrap; align-items:center
+      }
+      .filter-btn{
+        padding:10px 20px; border-radius:25px;
+        border:1px solid rgba(93,187,222,.45);
+        background: rgba(93,187,222,.08); color:var(--text);
+        cursor:pointer; transition:.3s; font-size:.9rem; font-weight:600
+      }
+      .filter-btn:hover{ background:rgba(93,187,222,.15); transform:translateY(-2px) }
+      .filter-btn.active{ background:linear-gradient(135deg,#6B5B95,#5DBBDE); color:white; border-color:transparent }
+
+      .pyramid-container{ display:flex; flex-direction:column; align-items:center; padding:40px 10px; max-width:650px; margin:0 auto; }
+      .pyramid-level{
+        position:relative; margin:8px 0; display:flex; align-items:center; justify-content:center;
+        color:#fff; font-weight:700; text-align:center; cursor:pointer; transition:transform .3s, box-shadow .3s;
+        border-radius:6px; box-shadow: inset 0 2px 4px rgba(255,255,255,.25), 0 6px 18px rgba(0,0,0,.15);
+      }
+      .pyramid-level:hover{ transform:scale(1.03); box-shadow: inset 0 3px 6px rgba(255,255,255,.3), 0 10px 25px rgba(84,192,232,.35); }
+      .pyramid-level-1{ width:25%; height:65px; background:linear-gradient(135deg,#5F9E8F,#60C5BA); }
+      .pyramid-level-2{ width:45%; height:70px; background:linear-gradient(135deg,#60C5BA,#5DBBDE); }
+      .pyramid-level-3{ width:65%; height:75px; background:linear-gradient(135deg,#5DBBDE,#6B8BA8); }
+      .pyramid-level-4{ width:85%; height:80px; background:linear-gradient(135deg,#6B8BA8,#6B5B95); }
+      .pyramid-content{ display:flex; flex-direction:column; align-items:center; justify-content:center; }
+      .pyramid-label{ font-size:13px; letter-spacing:1px; text-transform:uppercase; opacity:.9; }
+      .pyramid-value{ font-size:20px; font-weight:800; }
+      .pyramid-unit{ font-size:11px; opacity:.85; }
+
+      @media(max-width:768px){
+        .pyramid-value{ font-size:15px }
+        .pyramid-label{ font-size:10px }
+        .pyramid-unit{ font-size:9px }
+      }
+
+      .header-content{
+        flex-direction: row-reverse; display:flex; align-items:center; justify-content:space-between; gap:20px;
+      }
+      .logo-wrapper{
+        background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.1));
+        border-radius:15px; padding:12px 20px; 
+        box-shadow:0 6px 20px rgba(0,0,0,0.2), inset 0 1px 3px rgba(255,255,255,0.3);
+        display:flex; align-items:center; justify-content:center; 
+        transition: transform .3s ease, box-shadow .3s ease;
+        border: 1px solid rgba(255,255,255,0.2);
+      }
+      .logo-wrapper:hover{ 
+        transform:scale(1.08) translateY(-2px); 
+        box-shadow:0 8px 25px rgba(0,0,0,0.3), inset 0 1px 4px rgba(255,255,255,0.4);
+      }
+      .logo{ 
+        height:60px; width:auto; display:block; 
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); 
+        transition: filter .3s ease;
+      }
+      .logo-wrapper:hover .logo{
+        filter: drop-shadow(0 3px 6px rgba(0,0,0,0.3)) brightness(1.05);
+      }
+
+      .footer{
+        margin-top:40px; padding:20px; text-align:center; border-radius:15px;
+        background: linear-gradient(135deg, #6B5B95, #5DBBDE); color:#fff; font-size:1rem; font-weight:600;
+        letter-spacing:1px; box-shadow:0 -4px 12px rgba(0,0,0,0.1); animation: fadeIn 1s ease-in;
+      }
+      .footer p{ margin:0; text-shadow:1px 1px 3px rgba(0,0,0,0.25); }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <div class="header">
+        <div class="header-content">
+          <div class="logo-wrapper"><img src="Logo.png" alt="Company Logo" class="logo"></div>
+          <div class="header-text">
+            <h1>🏭 Waste Management Dashboard</h1>
+            <p>Performance Report - August 2025</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-section">
+        <button class="filter-btn active" data-facility="ALL">All Facilities</button>
+        <button class="filter-btn" data-facility="YIWRC">YIWRC</button>
+        <button class="filter-btn" data-facility="Al JOHFA">Al JOHFA</button>
+        <button class="filter-btn" data-facility="DIWMC">DIWMC</button>
+        <button class="filter-btn" data-facility="JIWRC">JIWRC</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>Total Incoming Waste</h3>
+          <div class="stat-value" id="totalWaste">70,509</div>
+          <p class="stat-subtitle">Tons (Solid + Liquid)</p>
+        </div>
+        <div class="stat-card">
+          <h3>Total Treatment</h3>
+          <div class="stat-value" id="totalTreatment">75,040</div>
+          <p class="stat-subtitle">Tons Processed</p>
+        </div>
+        <div class="stat-card">
+          <h3>Oil Recovery</h3>
+          <div class="stat-value" id="oilRecovery">5,327</div>
+          <p class="stat-subtitle">Tons Recovered</p>
+        </div>
+        <div class="stat-card">
+          <h3>BACKLOG</h3>
+          <div class="stat-value" id="totalBacklog">36,990</div>
+          <p class="stat-subtitle">Cu.M</p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="chart-container">
+          <h2>📊 Incoming Waste by Facility</h2>
+          <canvas id="wasteChart"></canvas>
+        </div>
+        <div class="chart-container">
+          <h2>🔄 Treatment Efficiency</h2>
+          <canvas id="treatmentChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <h2>📈 Recovery Overview</h2>
+        <canvas id="performanceChart"></canvas>
+      </div>
+
+      <div class="chart-container">
+        <h2>🔺 Waste Management Hierarchy</h2>
+        <div class="pyramid-container">
+          <div class="pyramid-level pyramid-level-1">
+            <div class="pyramid-content">
+              <span class="pyramid-label">REUSE</span>
+              <span class="pyramid-value" id="pyramid-reuse">1,173</span>
+              <span class="pyramid-unit">tons</span>
+            </div>
+          </div>
+          <div class="pyramid-level pyramid-level-2">
+            <div class="pyramid-content">
+              <span class="pyramid-label">RECOVERED</span>
+              <span class="pyramid-value" id="pyramid-recovered">6,148</span>
+              <span class="pyramid-unit">tons</span>
+            </div>
+          </div>
+          <div class="pyramid-level pyramid-level-3">
+            <div class="pyramid-content">
+              <span class="pyramid-label">RECYCLE</span>
+              <span class="pyramid-value" id="pyramid-recycle">1,807</span>
+              <span class="pyramid-unit">tons</span>
+            </div>
+          </div>
+          <div class="pyramid-level pyramid-level-4">
+            <div class="pyramid-content">
+              <span class="pyramid-label">Refuse /DISPOSAL</span>
+              <span class="pyramid-value" id="pyramid-disposal">63,045</span>
+              <span class="pyramid-unit">tons</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <h2>⚡ Utility Consumption</h2>
+        <canvas id="utilityChart"></canvas>
+      </div>
+
+      <div class="grid-2">
+        <div class="chart-container">
+          <h2>📊 Solidification Ratio by Facility</h2>
+          <canvas id="reagentChart"></canvas>
+        </div>
+        <div class="chart-container">
+          <h2>📝 Observation Status (Open vs Closed)</h2>
+          <canvas id="obsStatusChart"></canvas>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <h2>🌍 Environmental Monitoring</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>YIWRC</th>
+              <th>Al JOHFA</th>
+              <th>DIWMC</th>
+              <th>JIWRC</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Ground Water</strong></td>
+              <td><span class="status-badge status-warning">All 14 GW exceeding in salinity</span></td>
+              <td><span class="status-badge status-ok">Pass</span></td>
+              <td><span class="status-badge status-ok">Pass</span></td>
+              <td><span class="status-badge status-ok">Pass</span></td>
+            </tr>
+            <tr>
+              <td><strong>Noise</strong></td>
+              <td><span class="status-badge status-ok">Pass</span></td>
+              <td><span class="status-badge status-ok">Pass</span></td>
+              <td><span class="status-badge status-ok">Pass</span></td>
+              <td><span class="status-badge status-ok">Pass</span></td>
+            </tr>
+            <tr>
+              <td><strong>Air 3rd party</strong></td>
+              <td><span class="status-badge status-warning">Benzene Exceeding in Station 2,3,7,9</span></td>
+              <td><span class="status-badge status-ok">Pass</span></td>
+              <td><span class="status-badge status-ok">Pass</span></td>
+              <td><span class="status-badge status-ok">Pass</span></td>
+            </tr>
+            <tr>
+              <td><strong>FAA internal</strong></td>
+              <td><span class="status-badge status-warning">40 Hrs (H2S), 38 Hrs Benzene</span></td>
+              <td><span class="status-badge status-ok">NA</span></td>
+              <td><span class="status-badge status-warning">121 Hrs (NMHC), 16 Hrs (H2S), 270 Hrs (Benzene)</span></td>
+              <td><span class="status-badge status-ok">Pass</span></td>
+            </tr>
+            <tr>
+              <td><strong>Manhole</strong></td>
+              <td><span class="status-badge status-info">LF C1 - MH 1, 2, 3</span></td>
+              <td><span class="status-badge status-info">J12 C2 N2, Ev pond 1</span></td>
+              <td><span class="status-badge status-info">EP2, MH2+LF3, MH2+EP5, MH1+EP4, MH1&2</span></td>
+              <td><span class="status-badge status-ok">Pass</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <p>🌿 Environment & Sustainability Sector – ECPM Division</p>
+      <br><br>
+      <p>🧑‍💻Prepaired By:Abdulrahman Fayyad & Tabreez Zainula 📝Reviewd & Approved By: Mohmmed Alzben</p>
+    </footer>
+
+    <script>
+      // Register the datalabels plugin
+      Chart.register(ChartDataLabels);
+      
+      // Configure Chart.js for light theme
+      Chart.defaults.color = '#636e72';
+      Chart.defaults.borderColor = 'rgba(0, 0, 0, 0.1)';
+      
+      // Default datalabels configuration
+      Chart.defaults.set('plugins.datalabels', {
+        color: '#2d3436',
+        font: {
+          weight: 'bold',
+          size: 11
+        },
+        formatter: (value) => {
+          if (value === 0 || value === null) return '';
+          return Math.round(value).toLocaleString();
+        }
+      });
+
+      const facilityData = {
+        YIWRC: {
+          incomingSolid: 4973, incomingLiquid: 3943,
+          treatmentSolid: 16820, treatmentLiquid: 3295,
+          oilRecovered: 368.13, scrapRecovered: 54.62,
+          backlog: 12530,
+          utilities: { water: 2049250, diesel: 106145, energy: 0.00 },
+          reagentRatio: 1.2,
+          hierarchy: {},
+          observationStatus: { highOpen:1, highClose:0, mediumOpen:0, mediumClose:0, lowOpen:0, lowClose:0 }
+        },
+        'Al JOHFA': {
+          incomingSolid: 8816, incomingLiquid: 6383,
+          treatmentSolid: 3148, treatmentLiquid: 6383,
+          oilRecovered: 970, scrapRecovered: 83,
+          backlog: 5668,
+          utilities: { water: 1260000, diesel: 36000, energy: 0.00 },
+          reagentRatio: -0.6,
+          hierarchy: {},
+          observationStatus: { highOpen:0, highClose:0, mediumOpen:2, mediumClose:2, lowOpen:0, lowClose:0 }
+        },
+        DIWMC: {
+          incomingSolid: 11937, incomingLiquid: 20587,
+          treatmentSolid: 11937, treatmentLiquid: 20587,
+          oilRecovered: 2598.85, scrapRecovered: 682.05,
+          backlog: 0,
+          utilities: { water: 923830, diesel: 111047, energy: 0.00 },
+          reagentRatio: 0.0,
+          hierarchy: {},
+          observationStatus: { highOpen:18, highClose:2, mediumOpen:5, mediumClose:2, lowOpen:0, lowClose:0 }
+        },
+        JIWRC: {
+          incomingSolid: 0, incomingLiquid: 13870,
+          treatmentSolid: 1105, treatmentLiquid: 11765,
+          oilRecovered: 1390, scrapRecovered: 1.82,
+          backlog: 18792,
+          utilities: { water: 3717840, diesel: 141619, energy: 0.00 },
+          reagentRatio: -1.0,
+          hierarchy: {},
+          observationStatus: { highOpen:1, highClose:2, mediumOpen:0, mediumClose:1, lowOpen:0, lowClose:0 }
+        }
+      };
+      const allFacilities = Object.keys(facilityData);
+
+      function labelsFor(selected){ return (selected==='ALL') ? allFacilities : [selected]; }
+
+      function calculateTotals(selected='ALL') {
+        let totalWaste = 0, totalTreatment = 0, totalOil = 0, totalBacklog = 0;
+        const labs = labelsFor(selected);
+        labs.forEach(f => {
+          const d = facilityData[f];
+          totalWaste += d.incomingSolid + d.incomingLiquid;
+          totalTreatment += d.treatmentSolid + d.treatmentLiquid;
+          totalOil += d.oilRecovered;
+          totalBacklog += d.backlog;
+        });
+        document.getElementById('totalWaste').textContent = totalWaste.toLocaleString();
+        document.getElementById('totalTreatment').textContent = totalTreatment.toLocaleString();
+        document.getElementById('oilRecovery').textContent = totalOil.toLocaleString();
+        document.getElementById('totalBacklog').textContent = totalBacklog.toLocaleString();
+      }
+
+      const PYR_DEFAULTS = { reuse:1173, recycle:1807, disposal:63045 };
+      
+      function grandRecovered(){
+        return allFacilities.reduce((s,f)=> s + facilityData[f].oilRecovered + facilityData[f].scrapRecovered, 0);
+      }
+
+      function shareOfFacility(f){
+        const totalIncoming = allFacilities.reduce((s,k)=> s + facilityData[k].incomingSolid + facilityData[k].incomingLiquid, 0);
+        const inc = facilityData[f].incomingSolid + facilityData[f].incomingLiquid;
+        return totalIncoming>0 ? inc/totalIncoming : 0;
+      }
+
+      // Initialize all charts
+      const wasteChart = new Chart(document.getElementById('wasteChart'), {
+        type: 'bar',
+        data: {
+          labels: allFacilities,
+          datasets: [
+            {
+              label: 'Solid Waste (Tons)',
+              data: allFacilities.map(f => facilityData[f].incomingSolid),
+              backgroundColor: 'rgba(107, 91, 149, 0.8)',
+              borderColor: 'rgba(107, 91, 149, 1)',
+              borderWidth: 2
+            },
+            {
+              label: 'Liquid Waste (Tons)',
+              data: allFacilities.map(f => facilityData[f].incomingLiquid),
+              backgroundColor: 'rgba(93, 187, 222, 0.8)',
+              borderColor: 'rgba(93, 187, 222, 1)',
+              borderWidth: 2
+            }
+          ]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { 
+            legend: { position: 'bottom' },
+            datalabels: {
+              anchor: 'end',
+              align: 'end',
+              color: '#2d3436',
+              font: { weight: 'bold', size: 10 }
+            }
+          },
+          scales: {
+            x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+            y: { grid: { display: false } }
+          }
+        }
+      });
+
+      const treatmentChart = new Chart(document.getElementById('treatmentChart'), {
+        type: 'doughnut',
+        data: {
+          labels: allFacilities,
+          datasets: [{
+            label: 'Treatment (Tons)',
+            data: allFacilities.map(f => {
+              const treatment = facilityData[f].treatmentSolid + facilityData[f].treatmentLiquid;
+              return treatment;
+            }),
+            backgroundColor: [
+              'rgba(107, 91, 149, 0.8)',
+              'rgba(93, 187, 222, 0.8)',
+              'rgba(95, 158, 143, 0.8)',
+              'rgba(107, 139, 168, 0.8)'
+            ],
+            borderColor: '#fff',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { 
+            legend: { position: 'right' },
+            datalabels: {
+              color: '#fff',
+              font: { weight: 'bold', size: 12 },
+              formatter: (value) => value.toLocaleString()
+            }
+          }
+        }
+      });
+
+      const performanceChart = new Chart(document.getElementById('performanceChart'), {
+        type: 'line',
+        data: {
+          labels: allFacilities,
+          datasets: [
+            {
+              label: 'Oil Recovered (Tons)',
+              data: allFacilities.map(f => facilityData[f].oilRecovered),
+              backgroundColor: 'rgba(95, 158, 143, 0.2)',
+              borderColor: 'rgba(95, 158, 143, 1)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.4
+            },
+            {
+              label: 'Scrap Recovered (Tons)',
+              data: allFacilities.map(f => facilityData[f].scrapRecovered),
+              backgroundColor: 'rgba(96, 197, 186, 0.2)',
+              borderColor: 'rgba(96, 197, 186, 1)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { 
+            legend: { position: 'bottom' },
+            datalabels: {
+              align: 'top',
+              color: '#2d3436',
+              font: { weight: 'bold', size: 10 }
+            }
+          },
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+
+      const utilityChart = new Chart(document.getElementById('utilityChart'), {
+        type: 'bar',
+        data: {
+          labels: ['Potable Water (Liters)', 'Diesel (Liters)', 'Energy (kWh)'],
+          datasets: [
+            { label: 'YIWRC', data: [2049250,106145,0.00], backgroundColor: 'rgba(107, 91, 149, 0.8)' },
+            { label: 'Al JOHFA', data: [1260000,36000,0.00], backgroundColor: 'rgba(93, 187, 222, 0.8)' },
+            { label: 'DIWMC', data: [923830,111047,0.00], backgroundColor: 'rgba(95, 158, 143, 0.8)' },
+            { label: 'JIWRC', data: [3717840,141619,0.00], backgroundColor: 'rgba(107, 139, 168, 0.8)' }
+          ]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { 
+            legend: { position: 'bottom' },
+            datalabels: {
+              anchor: 'end',
+              align: 'end',
+              color: '#2d3436',
+              font: { weight: 'bold', size: 10 }
+            }
+          },
+          scales: {
+            x: { 
+              beginAtZero: true, 
+              grid: { color: 'rgba(0,0,0,0.05)' }
+            },
+            y: { grid: { display: false } }
+          }
+        }
+      });
+
+      const reagentChart = new Chart(document.getElementById('reagentChart'), {
+        type: 'line',
+        data: {
+          labels: allFacilities,
+          datasets: [{
+            label: 'Reagent Ratio',
+            data: allFacilities.map(f => facilityData[f].reagentRatio),
+            backgroundColor: 'rgba(96, 197, 186, 0.3)',
+            borderColor: 'rgba(96, 197, 186, 1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: allFacilities.map(f => {
+              const ratio = facilityData[f].reagentRatio;
+              if (ratio > 0.5) return 'rgba(107, 91, 149, 1)';
+              if (ratio < -0.5) return 'rgba(92, 122, 126, 1)';
+              return 'rgba(95, 158, 143, 1)';
+            }),
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 6,
+            pointHoverRadius: 8
+          },
+          {
+            label: 'Benchmark (Target)',
+            data: allFacilities.map(() => 1.0),
+            borderColor: '#6B5B95',
+            borderWidth: 2,
+            borderDash: [10, 5],
+            fill: false,
+            tension: 0,
+            pointRadius: 0,
+            pointHoverRadius: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom' },
+            datalabels: {
+              align: 'top',
+              color: '#2d3436',
+              font: { weight: 'bold', size: 10 },
+              formatter: (value, context) => {
+                if(context.datasetIndex === 1) return ''; // Don't show labels for target line
+                return value.toFixed(1);
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) { 
+                  if(context.datasetIndex === 0) {
+                    return 'Ratio: ' + context.parsed.y.toFixed(1); 
+                  } else {
+                    return 'Target: ' + context.parsed.y.toFixed(1);
+                  }
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              grid: { color: 'rgba(0,0,0,0.05)' },
+              title: { display: true, text: 'Ratio Value', color: '#636e72' }
+            },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+
+      const obsStatusChart = new Chart(document.getElementById('obsStatusChart'), {
+        type: 'bar',
+        data: {
+          labels: allFacilities,
+          datasets: [
+            { label: 'High - Open',   data: allFacilities.map(f => facilityData[f].observationStatus.highOpen),   backgroundColor: '#6B5B95' },
+            { label: 'High - Closed', data: allFacilities.map(f => facilityData[f].observationStatus.highClose),  backgroundColor: 'rgba(107,91,149,0.3)' },
+            { label: 'Medium - Open', data: allFacilities.map(f => facilityData[f].observationStatus.mediumOpen), backgroundColor: '#5F9E8F' },
+            { label: 'Medium - Closed', data: allFacilities.map(f => facilityData[f].observationStatus.mediumClose), backgroundColor: 'rgba(95,158,143,0.3)' },
+            { label: 'Low - Open',    data: allFacilities.map(f => facilityData[f].observationStatus.lowOpen),    backgroundColor: '#5DBBDE' },
+            { label: 'Low - Closed',  data: allFacilities.map(f => facilityData[f].observationStatus.lowClose),   backgroundColor: 'rgba(93,187,222,0.3)' }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: '',
+              color: '#5F9E8F',
+              font: { size: 16, weight: 'bold' }
+            },
+            legend: { position: 'bottom' },
+            datalabels: {
+              color: '#fff',
+              font: { weight: 'bold', size: 10 },
+              formatter: (value) => {
+                if (value === 0) return '';
+                return value;
+              }
+            }
+          },
+          scales: {
+            x: { stacked: true },
+            y: { stacked: true, beginAtZero: true }
+          }
+        }
+      });
+
+      function updateObsTitle(selected='ALL'){
+        const labs = labelsFor(selected);
+        let open=0, closed=0;
+        labs.forEach(f=>{
+          const o = facilityData[f].observationStatus;
+          open += (o.highOpen + o.mediumOpen + o.lowOpen);
+          closed += (o.highClose + o.mediumClose + o.lowClose);
+        });
+        obsStatusChart.options.plugins.title.text = `Total Open: ${open} | Total Closed: ${closed}`;
+      }
+
+      function updatePyramid(selected = 'ALL') {
+        const labs = labelsFor(selected);
+
+        let recoveredTotal = 0;
+        labs.forEach(f => { recoveredTotal += (facilityData[f].oilRecovered || 0) + (facilityData[f].scrapRecovered || 0); });
+
+        function partOf(total, f){
+          const share = shareOfFacility(f);
+          return total * share;
+        }
+
+        let reuseTotal = 0, recycleTotal = 0, disposalTotal = 0;
+
+        if(selected === 'ALL'){
+          reuseTotal    = PYR_DEFAULTS.reuse;
+          recycleTotal  = PYR_DEFAULTS.recycle;
+          disposalTotal = PYR_DEFAULTS.disposal;
+          recoveredTotal = Math.round(grandRecovered());
+        }else{
+          const f = labs[0];
+          reuseTotal    = partOf(PYR_DEFAULTS.reuse, f);
+          recycleTotal  = partOf(PYR_DEFAULTS.recycle, f);
+          disposalTotal = partOf(PYR_DEFAULTS.disposal, f);
+        }
+
+        document.getElementById('pyramid-reuse').textContent     = Math.round(reuseTotal).toLocaleString();
+        document.getElementById('pyramid-recovered').textContent = Math.round(recoveredTotal).toLocaleString();
+        document.getElementById('pyramid-recycle').textContent   = Math.round(recycleTotal).toLocaleString();
+        document.getElementById('pyramid-disposal').textContent  = Math.round(disposalTotal).toLocaleString();
+      }
+
+      function updateCharts(selected) {
+        const labels = labelsFor(selected);
+
+        // waste
+        wasteChart.data.labels = labels;
+        wasteChart.data.datasets[0].data = labels.map(f => facilityData[f].incomingSolid);
+        wasteChart.data.datasets[1].data = labels.map(f => facilityData[f].incomingLiquid);
+        wasteChart.update();
+
+        // treatment
+        treatmentChart.data.labels = labels;
+        treatmentChart.data.datasets[0].data = labels.map(f => {
+          const treatment = facilityData[f].treatmentSolid + facilityData[f].treatmentLiquid;
+          return treatment;
+        });
+        treatmentChart.data.datasets[0].backgroundColor = labels.map(f => {
+          const incoming = facilityData[f].incomingSolid + facilityData[f].incomingLiquid;
+          const treatment = facilityData[f].treatmentSolid + facilityData[f].treatmentLiquid;
+          const efficiency = incoming > 0 ? (treatment / incoming) * 100 : 0;
+          if (efficiency >= 100) return 'rgba(95, 158, 143, 0.8)';
+          else if (efficiency >= 80) return 'rgba(93, 187, 222, 0.8)';
+          else if (efficiency >= 60) return 'rgba(107, 139, 168, 0.8)';
+          else return 'rgba(245, 158, 11, 0.8)';
+        });
+        treatmentChart.data.datasets[0].borderColor = labels.map(f => {
+          const incoming = facilityData[f].incomingSolid + facilityData[f].incomingLiquid;
+          const treatment = facilityData[f].treatmentSolid + facilityData[f].treatmentLiquid;
+          const efficiency = incoming > 0 ? (treatment / incoming) * 100 : 0;
+          if (efficiency >= 100) return 'rgba(95, 158, 143, 1)';
+          else if (efficiency >= 80) return 'rgba(93, 187, 222, 1)';
+          else if (efficiency >= 60) return 'rgba(107, 139, 168, 1)';
+          else return 'rgba(245, 158, 11, 1)';
+        });
+
+        if (labels.length === 1) {
+          const f = labels[0];
+          const treatment = facilityData[f].treatmentSolid + facilityData[f].treatmentLiquid;
+          const incoming = facilityData[f].incomingSolid + facilityData[f].incomingLiquid;
+
+          treatmentChart.data.labels = [f + ' Treatment', 'Incoming'];
+          treatmentChart.data.datasets[0].data = [treatment, incoming];
+          treatmentChart.data.datasets[0].backgroundColor = [
+              'rgba(93, 187, 222, 0.8)',
+              'rgba(200, 200, 200, 0.3)'
+          ];
+        } else {
+          treatmentChart.data.labels = labels;
+          treatmentChart.data.datasets[0].data = labels.map(f => {
+            const treatment = facilityData[f].treatmentSolid + facilityData[f].treatmentLiquid;
+            return treatment;
+          });
+          treatmentChart.data.datasets[0].backgroundColor = [
+            'rgba(107, 91, 149, 0.8)',
+            'rgba(93, 187, 222, 0.8)',
+            'rgba(95, 158, 143, 0.8)',
+            'rgba(107, 139, 168, 0.8)'
+          ];
+        }
+        treatmentChart.update();
+
+        // performance
+        performanceChart.data.labels = labels;
+        performanceChart.data.datasets[0].data = labels.map(f => facilityData[f].oilRecovered);
+        performanceChart.data.datasets[1].data = labels.map(f => facilityData[f].scrapRecovered);
+        performanceChart.update();
+
+        // pyramid
+        updatePyramid(selected);
+
+        // utilities
+        utilityChart.data.labels = ['Potable Water (Liters)', 'Diesel (Liters)', 'Energy (kWh)'];
+        if (selected === 'ALL') {
+          utilityChart.data.datasets = allFacilities.map((f, i) => {
+            const colors = ['rgba(107, 91, 149, 0.8)', 'rgba(93, 187, 222, 0.8)', 'rgba(95, 158, 143, 0.8)', 'rgba(107, 139, 168, 0.8)'];
+            const d = facilityData[f].utilities;
+            return { label: f, data: [d.water, d.diesel, d.energy], backgroundColor: colors[i] };
+          });
+        } else {
+          const d = facilityData[selected].utilities;
+          utilityChart.data.datasets = [{ label: selected, data: [d.water, d.diesel, d.energy], backgroundColor: 'rgba(93,187,222,0.8)' }];
+        }
+        utilityChart.update();
+
+        // reagent
+        reagentChart.data.labels = labels;
+        reagentChart.data.datasets[0].data = labels.map(f => facilityData[f].reagentRatio);
+        reagentChart.data.datasets[0].pointBackgroundColor = labels.map(f => {
+          const ratio = facilityData[f].reagentRatio;
+          if (ratio > 0.5) return 'rgba(107, 91, 149, 1)';
+          if (ratio < -0.5) return 'rgba(92, 122, 126, 1)';
+          return 'rgba(95, 158, 143, 1)';
+        });
+        reagentChart.data.datasets[1].data = labels.map(() => 1.0);
+        reagentChart.update();
+
+        // observations
+        obsStatusChart.data.labels = labels;
+        obsStatusChart.data.datasets[0].data = labels.map(f => facilityData[f].observationStatus.highOpen);
+        obsStatusChart.data.datasets[1].data = labels.map(f => facilityData[f].observationStatus.highClose);
+        obsStatusChart.data.datasets[2].data = labels.map(f => facilityData[f].observationStatus.mediumOpen);
+        obsStatusChart.data.datasets[3].data = labels.map(f => facilityData[f].observationStatus.mediumClose);
+        obsStatusChart.data.datasets[4].data = labels.map(f => facilityData[f].observationStatus.lowOpen);
+        obsStatusChart.data.datasets[5].data = labels.map(f => facilityData[f].observationStatus.lowClose);
+
+        updateObsTitle(selected);
+        obsStatusChart.update();
+
+        calculateTotals(selected);
+      }
+
+      // Initialize filter buttons
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const facility = this.dataset.facility;
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          updateCharts(facility);
+        });
+      });
+
+      // Initialize dashboard
+      calculateTotals('ALL');
+      updatePyramid('ALL');
+      updateObsTitle('ALL');
+    </script>
+  </body>
+</html>   

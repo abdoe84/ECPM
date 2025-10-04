@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us - Reviva</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root{
+      --scampi: #625d9d;
+      --patina: #66a286;
+      --picton-blue: #54c0e8;
+      --hippie-blue: #5f84b5;
+      --juniper: #658a8e;
+      --fountain-blue: #5bb4c2;
+      --breaker-bay: #63a597;
+
+      --bg-deep:#0f0f23;
+      --bg-grad:#1a1a3e;
+      --text:#e7eef0;
+      --muted:#9fb2b6;
+      --card:#151538;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
+    }
+
+    body{
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(160deg, var(--bg-deep), var(--bg-grad));
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ===== HEADER ===== */
+    .topbar{
+      background: linear-gradient(90deg, var(--scampi), var(--picton-blue), var(--fountain-blue));
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 16px 32px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.3);
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+    .brand img{
+      height:50px;
+      width:auto;
+      border-radius:6px;
+    }
+    .brand span{
+      font-weight:800;
+      font-size:1.2rem;
+      color:#fff;
+    }
+    nav ul{list-style:none;display:flex;gap:24px;margin:0;padding:0;}
+    nav a{
+      color:#fff;
+      text-decoration:none;
+      font-weight:600;
+      padding:8px 14px;
+      border-radius:8px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+      transition: all .25s ease;
+    }
+    nav a:hover{background: rgba(255,255,255,.15);}
+
+    /* ===== MAIN CONTENT ===== */
+    h1{
+      text-align: center;
+      font-size: 2.2rem;
+      margin:40px 0 30px;
+      font-weight: 800;
+      color: var(--picton-blue);
+    }
+
+    .grid{
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(300px,1fr));
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .card{
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      display:flex;
+      flex-direction:column;
+      border:1px solid rgba(255,255,255,.1);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .card:hover{
+      transform: translateY(-6px);
+      box-shadow: 0 18px 40px rgba(0,0,0,.45);
+      border-color: rgba(255,255,255,.25);
+    }
+    .name{font-size:1.2rem;font-weight:700;margin-bottom:6px;color: var(--fountain-blue);}
+    .site{font-size:1rem;font-weight:500;margin-bottom:14px;color: var(--muted);}
+    .email a{text-decoration:none;color: var(--picton-blue);font-weight:600;word-break: break-word;}
+    .email a:hover{text-decoration:underline;color: var(--scampi);}
+
+    /* ===== ORG CHART ===== */
+    .org-chart{max-width: 900px;margin:60px auto 20px;text-align:center;}
+    .org-node{
+      background: var(--card);
+      border:1px solid rgba(255,255,255,.15);
+      display:inline-block;
+      padding:16px 20px;
+      border-radius:12px;
+      margin:10px;
+      box-shadow: var(--shadow);
+      font-weight:700;
+      color: var(--fountain-blue);
+    }
+    .org-connector{width:2px;background: var(--muted);margin:0 auto;}
+    .org-children{display:flex;justify-content:center;flex-wrap:wrap;gap:16px;margin-top:20px;}
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="topbar">
+    <div class="brand">
+      <img src="logo.png" alt="Reviva Logo">
+      <span>Environment & Sustainability Sector — ECPM Division</span>
+    </div>
+    <nav>
+      <ul>
+        <a href="../index.html"><i class="fa-solid fa-house"></i> Home</a>
+      </ul>
+    </nav>
+  </div>
+
+  <h1>Contact Us</h1>
+
+  <!-- CONTACT CARDS -->
+  <div class="grid">
+    <div class="card">
+      <div class="name">Mustafa Matuq Alhumud</div>
+      <div class="site">Dammam & Homa Sites</div>
+      <div class="email"><a href="mailto:alhumud.m@reviva.sa">alhumud.m@reviva.sa</a></div>
+    </div>
+
+    <div class="card">
+      <div class="name">Prasanna Soundararjan</div>
+      <div class="site">Juhfa & Rabigh Sites</div>
+      <div class="email"><a href="mailto:Prasanna@reviva.sa">Prasanna@reviva.sa</a></div>
+    </div>
+
+    <div class="card">
+      <div class="name">Waleed Mohammed Alanazi</div>
+      <div class="site">Jubail Site</div>
+      <div class="email"><a href="mailto:alanazi.w@reviva.sa">alanazi.w@reviva.sa</a></div>
+    </div>
+
+    <div class="card">
+      <div class="name">Amjad Abdullah Aljahdali</div>
+      <div class="site">Yanbu Site</div>
+      <div class="email"><a href="mailto:amjaad.aljahdali@reviva.sa">amjaad.aljahdali@reviva.sa</a></div>
+    </div>
+
+    <div class="card">
+      <div class="name">Tabreaz Basrur Zainula</div>
+      <div class="site">Headquarters (HQ)</div>
+      <div class="email"><a href="mailto:tabreaz@reviva.sa">tabreaz@reviva.sa</a></div>
+    </div>
+  </div>
+
+  <!-- ORG CHART -->
+  <div class="org-chart">
+    <div class="org-node">Mohammed Al-Zebn<br><small>Sector Director</small></div>
+    <div class="org-connector" style="height:30px;"></div>
+    <div class="org-node">Tabreaz Basrur Zainula<br><small>Division Manager</small></div>
+    <div class="org-connector" style="height:30px;"></div>
+    <div class="org-children">
+      <div class="org-node">Mustafa Alhumud<br><small>Dammam & Homa</small></div>
+      <div class="org-node">Prasanna Soundararjan<br><small>Juhfa & Rabigh</small></div>
+      <div class="org-node">Waleed Alanazi<br><small>Jubail</small></div>
+      <div class="org-node">Amjad Aljahdali<br><small>Yanbu</small></div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>News - Reviva</title>
+  <style>
+    :root{
+      --scampi: #625d9d;
+      --patina: #66a286;
+      --picton-blue: #54c0e8;
+      --hippie-blue: #5f84b5;
+      --juniper: #658a8e;
+      --fountain-blue: #5bb4c2;
+      --breaker-bay: #63a597;
+
+      --bg-deep:#0f0f23;
+      --bg-grad:#1a1a3e;
+      --text:#e7eef0;
+      --muted:#9fb2b6;
+      --card:#151538;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
+    }
+
+    body{
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(160deg, var(--bg-deep), var(--bg-grad));
+      color: var(--text);
+      margin: 0;
+      padding: 40px 20px;
+    }
+
+    h1{
+      text-align: center;
+      font-size: 2.2rem;
+      margin-bottom: 40px;
+      font-weight: 800;
+      color: var(--picton-blue);
+    }
+
+    .news-card{
+      max-width: 900px;
+      margin: 0 auto;
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 32px;
+      line-height: 1.7;
+      border:1px solid rgba(255,255,255,.1);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .news-card:hover{
+      transform: translateY(-4px);
+      box-shadow: 0 16px 36px rgba(0,0,0,.4);
+    }
+
+    .date{
+      font-size: .95rem;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .title{
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--fountain-blue);
+    }
+
+    p{margin-bottom: 14px;}
+  </style>
+</head>
+<body>
+
+  <h1>News</h1>
+
+  <div class="news-card">
+    <div class="date">8 September 2025</div>
+    <div class="title">CEO Meeting with Environment & Sustainability Sector Team</div>
+    <p>
+      The CEO, <strong>Eng. Nasser Al-Mutairi</strong>, met with the 
+      <strong>Environment & Sustainability Sector</strong> team on 8 September 2025.
+    </p>
+    <p>
+      During the meeting, the Sector Director presented a brief overview of the sector’s 
+      achievements, along with the accomplishments of each division. Each team member 
+      also introduced themselves and their work.
+    </p>
+    <p>
+      The CEO emphasized providing full support to help the sector grow, in line with 
+      the company’s policy of <strong>development and expansion</strong>.
+    </p>
+  </div>
+
+</body>
+</html>
